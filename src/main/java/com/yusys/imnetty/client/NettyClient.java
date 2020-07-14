@@ -1,5 +1,6 @@
 package com.yusys.imnetty.client;
 
+import com.yusys.imnetty.common.codec.Invocation;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -12,10 +13,12 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class NettyClient {
     private static final Logger LOG = LoggerFactory.getLogger(NettyClient.class);
+    private static final Integer RECONNECT_SECONDS = 60;
     @Value("${netty.server.host:127.0.0.1}")
     private String remoteHost;
     @Value("${netty.server.port:8080}")
@@ -51,6 +54,13 @@ public class NettyClient {
     }
 
     public void reconnect() {
+        LOG.info("重连...");
+        worker.schedule(new Runnable() {
+            @Override
+            public void run() {
+                start();
+            }
+        },RECONNECT_SECONDS, TimeUnit.SECONDS);
     }
     /**
      * 关闭 Netty Client
@@ -69,7 +79,7 @@ public class NettyClient {
      *
      * @param invocation 消息体
      */
-    /*public void send(Invocation invocation) {
+    public void send(Invocation invocation) {
         if (channel == null) {
             LOG.error("[send][连接不存在]");
             return;
@@ -80,5 +90,5 @@ public class NettyClient {
         }
         // 发送消息
         channel.writeAndFlush(invocation);
-    }*/
+    }
 }

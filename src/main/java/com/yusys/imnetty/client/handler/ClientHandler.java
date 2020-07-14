@@ -1,6 +1,9 @@
 package com.yusys.imnetty.client.handler;
 
 import com.yusys.imnetty.client.NettyClient;
+import com.yusys.imnetty.client.message.heartbeat.HeartBeatRequest;
+import com.yusys.imnetty.common.codec.Invocation;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -36,7 +39,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         // 空闲时向服务端发送心跳
         if (event instanceof IdleStateEvent) {
             LOG.info("[userEventTriggered][发起一次心跳]");
-            
+            HeartBeatRequest heartBeatRequest = new HeartBeatRequest();
+            ctx.writeAndFlush(new Invocation(HeartBeatRequest.TYPE, heartBeatRequest))
+            .addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
         } else {
             super.userEventTriggered(ctx, event);
         }
